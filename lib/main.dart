@@ -43,28 +43,55 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Expanded(
-              child: Form(
-                key: formKey,
-                child: Column(
-                  children: <Widget>[
-                    CustomDropdownFormField(
-                      validator: (DropdownItem? value) {
-                        if (value == null || value.text.isEmpty) {
-                          return 'Por favor selecciona un ítem';
-                        }
-                        return null;
-                      },
-                    ),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (formKey.currentState!.validate()) {
-                          // Procesar datos del formulario
-                        }
-                      },
-                      child: const Text('Enviar'),
-                    ),
-                  ],
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Expanded(
+                child: Form(
+                  key: formKey,
+                  child: Column(
+                    children: <Widget>[
+                      CustomDropdownFormField(
+                        itemBuilder: (BuildContext context) {
+                          List<DropdownItem> menuItems = List.generate(
+                            50,
+                            (index) => DropdownItem(
+                              text: 'Ítem ${index + 1}',
+                              icon: Icons.ac_unit_outlined,
+                            ),
+                          );
+
+                          return [
+                            for (DropdownItem item in menuItems)
+                              PopupMenuItem<DropdownItem>(
+                                value: item,
+                                child: Row(
+                                  children: [
+                                    Text(item.text),
+                                    const SizedBox(width: 8),
+                                    Icon(item.icon),
+                                  ],
+                                ),
+                              ),
+                          ];
+                        },
+                        validator: (DropdownItem? value) {
+                          if (value == null || value.text.isEmpty) {
+                            return 'Por favor selecciona un ítem';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: () {
+                          if (formKey.currentState!.validate()) {
+                            // Procesar datos del formulario
+                          }
+                        },
+                        child: const Text('Enviar'),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -88,6 +115,8 @@ class CustomDropdownFormField extends FormField<DropdownItem> {
     super.onSaved,
     super.validator,
     super.initialValue,
+    required List<PopupMenuEntry<DropdownItem>> Function(BuildContext)
+        itemBuilder,
     AutovalidateMode super.autovalidateMode = AutovalidateMode.disabled,
   }) : super(
           builder: (FormFieldState<DropdownItem> field) {
@@ -99,30 +128,7 @@ class CustomDropdownFormField extends FormField<DropdownItem> {
                   onSelected: (DropdownItem value) {
                     field.didChange(value);
                   },
-                  itemBuilder: (BuildContext context) {
-                    List<DropdownItem> menuItems = List.generate(
-                      50,
-                      (index) => DropdownItem(
-                        text: 'Ítem ${index + 1}',
-                        icon: Icons.ac_unit_outlined,
-                      ),
-                    );
-
-                    return [
-                      for (DropdownItem item in menuItems)
-                        PopupMenuItem<DropdownItem>(
-                          value: item,
-                          child: Row(
-                            children: [
-                              Text(item.text),
-                              const SizedBox(width: 8),
-                              Icon(item.icon),
-                            ],
-                          ),
-                        ),
-                    ];
-                  },
-                  // Limitar la altura del menú desplegable
+                  itemBuilder: itemBuilder,
                   constraints: const BoxConstraints(maxHeight: 230),
                   child: Container(
                     padding:
